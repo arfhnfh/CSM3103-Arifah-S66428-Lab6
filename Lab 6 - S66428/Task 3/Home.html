@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/aa5de83a5b.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">CSM3103</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="home.html">Home<span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a id="navTable" class="nav-link" href="table.html">Table</a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item mx-1">
+                        <a class="nav-link" href="#" id="linkUsername">Username</a>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link" href="#" id="linkSignOut">Sign Out</a>
+                    </li>
+                </ul>
+            </form>
+        </div>
+    </nav>
+
+    <div class="mx-auto mt-5 text-center">
+        <h1 id="header"></h1>
+    </div>
+
+    <script>
+        // References
+        var linkUsername = document.getElementById('linkUsername');
+        var linkSignOut = document.getElementById('linkSignOut');
+        var header = document.getElementById('header');
+        var navTable = document.getElementById('navTable');
+        var currentUser = null;
+
+        // Functions
+        function getUsername() {
+            let keepLoggedIn = localStorage.getItem("keepLoggedIn");
+
+            if (keepLoggedIn == "Yes") {
+                currentUser = JSON.parse(localStorage.getItem('user'));
+            }
+            else {
+                currentUser = JSON.parse(sessionStorage.getItem('user'));
+            }
+        }
+
+        function signOut() {
+            sessionStorage.removeItem('user');
+            localStorage.removeItem('user');
+            localStorage.removeItem('keepLoggedIn');
+            window.location = "home.html";
+        }
+
+        // Windows load
+        window.onload = function() {
+            getUsername();
+
+            if (currentUser == null) {
+                linkUsername.innerText = "Create New Account";
+                linkUsername.classList.replace("nav-link", "btn");
+                linkUsername.classList.add("btn-light");
+                linkUsername.href = "register.html";
+
+                linkSignOut.innerText = "Log In";
+                linkSignOut.classList.replace("nav-link", "btn");
+                linkSignOut.classList.add("btn-secondary");
+                linkSignOut.href = "login.html";
+
+                navTable.classList.add("disabled");
+            }
+            else {
+                linkUsername.innerText = currentUser.username;
+                linkUsername.classList.replace("btn", "nav-link");
+                linkUsername.classList.remove("btn-light");
+                linkUsername.href = "#";
+
+                linkSignOut.innerText = "Sign Out";
+                linkSignOut.classList.replace("btn", "nav-link");
+                linkSignOut.classList.remove("btn-secondary");
+                linkSignOut.href = "javascript:signOut()";
+
+                navTable.classList.remove("disabled");
+
+                header.innerText = "Welcome " + currentUser.fullname;
+            }
+        }
+    </script>
+    
+</body>
+</html>

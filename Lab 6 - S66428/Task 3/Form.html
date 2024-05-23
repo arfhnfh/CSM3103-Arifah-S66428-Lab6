@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">CSM3103</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="home.html">Home</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="table.html">Table<span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item mx-1">
+                        <a class="nav-link" href="#" id="linkUsername">Username</a>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link" href="#" id="linkSignOut">Sign Out</a>
+                    </li>
+                </ul>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container mt-3">
+        <form>
+            <div class="form-group">
+                <label for="inputName">Name</label>
+                <input type="text" placeholder="Enter name" id="inputName" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="inputAddress">Address</label>
+                <input type="text" placeholder="Enter address" id="inputAddress" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="inputPhoneNo">Phone number</label>
+                <input type="text" placeholder="Enter phone number (e.g. 01XXXXXXXXX)" id="inputPhoneNo" class="form-control" required>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="reset" class="btn">Clear</button>
+                <button type="button" class="btn btn-dark" id="btnSubmit">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // References
+        var linkUsername = document.getElementById('linkUsername');
+        var linkSignOut = document.getElementById('linkSignOut');
+        var currentUser = null;
+
+        // Functions
+        function getUsername() {
+            let keepLoggedIn = localStorage.getItem("keepLoggedIn");
+
+            if (keepLoggedIn == "Yes") {
+                currentUser = JSON.parse(localStorage.getItem('user'));
+            }
+            else {
+                currentUser = JSON.parse(sessionStorage.getItem('user'));
+            }
+        }
+
+        function signOut() {
+            sessionStorage.removeItem('user');
+            localStorage.removeItem('user');
+            localStorage.removeItem('keepLoggedIn');
+            window.location = "home.html";
+        }
+
+        // Windows load
+        window.onload = function() {
+            getUsername();
+
+            if (currentUser == null) {
+                linkUsername.innerText = "Create New Account";
+                linkUsername.classList.replace("nav-link", "btn");
+                linkUsername.classList.add("btn-light");
+                linkUsername.href = "register.html";
+
+                linkSignOut.innerText = "Log In";
+                linkSignOut.classList.replace("nav-link", "btn");
+                linkSignOut.classList.add("btn-secondary");
+                linkSignOut.href = "login.html";
+            }
+            else {
+                linkUsername.innerText = currentUser.username;
+                linkUsername.classList.replace("btn", "nav-link");
+                linkUsername.classList.remove("btn-light");
+                linkUsername.href = "#";
+
+                linkSignOut.innerText = "Sign Out";
+                linkSignOut.classList.replace("btn", "nav-link");
+                linkSignOut.classList.remove("btn-secondary");
+                linkSignOut.href = "javascript:signOut()";
+            }
+        }
+    </script>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBUG2d9ZDi1gl36O2pJq9nO_TUJFPrZtUo",
+            authDomain: "lab6-c1241.firebaseapp.com",
+            databaseURL: "https://lab6-c1241-default-rtdb.firebaseio.com",
+            projectId: "lab6-c1241",
+            storageBucket: "lab6-c1241.appspot.com",
+            messagingSenderId: "617172154170",
+            appId: "1:617172154170:web:467024696b36c3bfd68203"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        // Import the selected method from google related to Firebase-Database
+        import { getDatabase, set, get, remove, update, ref, child }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        // Create the holder for the database using the imported method getDatabase()
+        const db = getDatabase();
+
+        // References
+        var inputName = document.getElementById('inputName');
+        var inputAddress = document.getElementById('inputAddress');
+        var inputPhoneNo = document.getElementById('inputPhoneNo');
+        var btnSubmit = document.getElementById('btnSubmit');
+        
+        // Functions
+        function validateInput() {
+            let nameRegex = /^[a-zA-Z\s]+$/;
+            let phoneNoRegex = /^01[0-9]{8,9}$/;
+
+            if (!nameRegex.test(nameRegex.value)) {
+                alert("The name should only contain alphabets!");
+                return false;
+            }
+            if (!phoneNoRegex.test(inputPhoneNo.value)) {
+                alert("Invalid phone number");
+                return false;
+            }
+
+            return true;
+        }
+
+        function addData() {
+            if (!validateInput()) {
+                return;
+            }
+
+            set(ref(db, "People2/" + inputName.value), {
+                name: inputName.value.toUpperCase(),
+                address: inputAddress.value.toUpperCase(),
+                phoneNo: inputPhoneNo.value
+            })
+            .then( () => {
+                alert("Data added successfully!");
+                window.location = "table.html";
+            })
+            .catch((error) => {
+                alert(error);
+            });
+        };
+
+        // Add event listener
+        btnSubmit.addEventListener('click', addData);
+    </script>
+    
+</body>
+</html>

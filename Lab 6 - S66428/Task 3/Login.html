@@ -1,0 +1,112 @@
+Login<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js" integrity="sha512-a+SUDuwNzXDvz4XrIcXHuCf089/iJAoN4lmrXJg18XnduKK6YlDHNRalv4yd1N40OKI80tFidF+rqTFKGPoWFQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mb-5">
+        <h3 class="mb-3">Log In</h3>
+        <input type="text" placeholder="Username" id="inputUsername" class="form-control mb-3">
+        <input type="password" placeholder="Password" id="inputPassword" class="form-control mb-3">
+        <div class="custom-control custom-switch mb-3">
+            <input type="checkbox" class="custom-control-input" id="switchKeepLoggedIn">
+            <label class="custom-control-label" for="switchKeepLoggedIn">Keep me logged in</label>
+        </div>
+        <button type="button" id="btnLogIn" class="btn btn-outline-primary mb-3 w-100">Log In</button>
+        <a href="register.html" class="badge badge-secondary py-1 w-100">Create a new account</a>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+        import { getDatabase, set, ref, remove } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBUG2d9ZDi1gl36O2pJq9nO_TUJFPrZtUo",
+            authDomain: "lab6-c1241.firebaseapp.com",
+            databaseURL: "https://lab6-c1241-default-rtdb.firebaseio.com",
+            projectId: "lab6-c1241",
+            storageBucket: "lab6-c1241.appspot.com",
+            messagingSenderId: "617172154170",
+            appId: "1:617172154170:web:467024696b36c3bfd68203"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        // Import the selected method from google related to Firebase-Database
+        import { getDatabase, set, get, remove, update, ref, child }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        // Create the holder for the database using the imported method getDatabase()
+        const db = getDatabase();
+
+        // References
+        var inputUsername = document.getElementById('inputUsername');
+        var inputPassword = document.getElementById('inputPassword');
+        var btnLogIn = document.getElementById('btnLogIn');
+
+        // Authentication process
+        function authenticateUser() {
+            get(child(ref(db), "UsersList/" + inputUsername.value))
+            .then((snapshot)=>{
+                if (snapshot.exists()) {
+                    let dbPassword = decryptPassword(snapshot.val().password);
+                    if (inputPassword.value.toLowerCase() == dbPassword) {
+                        login(snapshot.val());
+                    }
+                    else {
+                        alert("User does not exist!");
+                    }
+                }
+                else {
+                    alert("Invalid username or password!");
+                }
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+        }
+
+        // Password decryption
+        function decryptPassword(dbPassword) {
+            var decryptedPassword = CryptoJS.AES.decrypt(dbPassword, inputPassword.value);
+            return decryptedPassword.toString(CryptoJS.enc.Utf8);
+        }
+
+        // Login
+        function login(user) {
+            let keepLoggedIn = document.getElementById('switchKeepLoggedIn').checked;
+
+            if (!keepLoggedIn) {
+                sessionStorage.setItem('user', JSON.stringify(user));
+                window.location = "home.html";
+            }
+            else {
+                localStorage.setItem('keepLoggedIn', 'Yes');
+                localStorage.setItem('user', JSON.stringify(user));
+                window.location = "home.html";
+            }
+        }
+
+        // Assign the events
+        btnLogIn.addEventListener('click', authenticateUser);
+    </script>
+</body>
+</html>

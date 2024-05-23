@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .imagesDivStyle {
+            width: 610px;
+            border: 1px grey solid;
+            padding: 5px;
+            margin-left: 120px;
+            margin-bottom: 20px;
+        }
+
+        .imgs {
+            height: 80px;
+            width: 100px;
+            border: 1px black dashed;
+            margin: 5px;
+        }
+
+        label {
+            display: inline-block;
+            width: 120px;
+        }
+
+        input, textarea, select {
+            width: 600px;
+            border: grey 1px solid;
+            resize: none;
+            padding: 8px;
+        }
+
+        select {
+            width: 618px;
+        }
+
+        textarea {
+            height: 100px;
+        }
+
+        .pointers {
+            border: 1px darkslateblue dashed;
+        }
+
+        #pdlab {
+            height: 100px;
+            vertical-align: top;
+        }
+
+        #addprodbtn, #selimgbtn {
+            float: right;
+            margin-left: 10px;
+        }
+
+        #controldiv {
+            width: 740px;
+        }
+
+        #loadlab {
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <label>Product Name</label> <input type="text" id="nameinp"><br><br>
+    <label>Product Price</label> <input type="text" id="priceinp"><br><br>
+    <label>Stock (Quantity)</label> <input type="text" id="stockinp"><br><br>
+    <label>Category</label>
+    <select id="catinp">
+        <option value="Keyboard & Mouse">Keyboard & Mouse</option>
+        <option value="Laptops">Laptops</option>
+        <option value="Monitors">Monitors</option>
+        <option value="Graphic Card">Graphic Card</option>
+        <option value="Power Supply">Power Supply</option>
+    </select><br><br>
+
+    <label>Points #1</label> <input type="text" id="p1inp" class="pointers"><br><br>
+    <label>Points #2</label> <input type="text" id="p2inp" class="pointers"><br><br>
+    <label>Points #3</label> <input type="text" id="p3inp" class="pointers"><br><br>
+    <label>Points #4</label> <input type="text" id="p4inp" class="pointers"><br><br>
+    <label>Points #5</label> <input type="text" id="p5inp" class="pointers"><br><br>
+
+    <label id="pdlab">Product Description</label> <textarea id="desarea"></textarea><br><br>
+
+    <div id="imagesDiv"></div>
+
+    <div id="controldiv">
+        <label></label><label id="loadlab">uploading 1 of 3</label>
+        <button id="addprodbtn">Add Product</button>
+        <button id="selimgbtn">Select Images</button>
+    </div>
+
+    <script type="module">
+        //---------------------------------REFERENCES & Variable---------------------------------------------------------//
+
+        var Files = [];
+        var FileReaders = [];
+        var ImageLinksArray = [];
+
+        const imgdiv = document.getElementById('imagesDiv');
+        const selBtn = document.getElementById('selimgbtn');
+        const addBtn = document.getElementById('addprodbtn');
+        const proglab = document.getElementById('loadlab');
+
+        const name = document.getElementById('nameinp');
+        const category = document.getElementById('catinp');
+        const description = document.getElementById('desarea');
+        const price = document.getElementById('priceinp');
+        const stock = document.getElementById('stockinp');
+
+        const p1 = document.getElementById('p1inp');
+        const p2 = document.getElementById('p2inp');
+        const p3 = document.getElementById('p3inp');
+        const p4 = document.getElementById('p4inp');
+        const p5 = document.getElementById('p5inp');
+
+        function OpenFileDialog() {
+            let inp = document.createElement('input');
+            inp.type = 'file';
+            inp.multiple = true;
+
+            inp.onchange = (e) => {
+                AssignImgsToFilesArray(e.target.files);
+                CreateImgTags();
+            };
+            inp.click();
+        }
+
+        function AssignImgsToFilesArray(theFiles) {
+            let num = Files.length + theFiles.length;
+            let looplim = (num <= 10) ? theFiles.length : (10 - Files.length);
+
+            for (let i = 0; i < looplim; i++) {
+                Files.push(theFiles[i]);
+            }
+
+            if (num > 10) alert("maximum 10 images are allowed!");
+        }
+
+        function CreateImgTags() {
+            imgdiv.innerHTML = '';
+            imgdiv.classList.add('imagesDivStyle');
+
+            for (let i = 0; i < Files.length; i++) {
+                FileReaders[i] = new FileReader();
+
+                FileReaders[i].onload = function () {
+                    var img = document.createElement('img');
+                    img.id = 'imgno' + i;
+                    img.classList.add('imgs');
+                    img.src = FileReaders[i].result;
+                    imgdiv.append(img);
+                };
+                FileReaders[i].readAsDataURL(Files[i]);
+            }
+
+            let lab = document.createElement('label');
+            lab.innerHTML = 'clear images';
+            lab.style = 'cursor: pointer; display: block; color: navy; font-size: 12px';
+            lab.addEventListener('click', ClearImages);
+            imgdiv.append(lab);
+        }
+
+        function ClearImages() {
+            Files = [];
+            ImageLinksArray = [];
+            imgdiv.innerHTML = '';
+            imgdiv.classList.remove('imagesDivStyle');
+        }
+
+        function getShortTitle() {
+            return name.value.replace(/[^a-zA-Z0-9]/g, "");
+        }
+
+        function GetImgUploadProgress() {
+            return 'Images Upload ' + ImageLinksArray.length + ' of ' + Files.length;
+        }
+
+        function IsAllImagesUploaded() {
+            return ImageLinksArray.length === Files.length;
+        }
+
+        function GetPoints() {
+            let points = [];
+            if (p1.value.length > 0) points.push(p1.value);
+            if (p2.value.length > 0) points.push(p2.value);
+            if (p3.value.length > 0) points.push(p3.value);
+            if (p4.value.length > 0) points.push(p4.value);
+            if (p5.value.length > 0) points.push(p5.value);
+            return points;
+        }
+
+        function RestoreBack() {
+            selBtn.disabled = false;
+            addBtn.disabled = false;
+        }
+        //----------------------------------------------EVENTS--------------------------------------------------//
+
+        selBtn.addEventListener('click', OpenFileDialog);
+        addBtn.addEventListener('click', UploadAllImages);
+
+        //----------------------------------------------UPLOAD IMAGE TO FIREBASE STORAGE--------------------------//
+
+        function UploadAllImages() {
+            selBtn.disabled = true;
+            addBtn.disabled = true;
+
+            ImageLinksArray = [];
+
+            for (let i = 0; i < Files.length; i++) {
+                UploadAnImage(Files[i], i);
+            }
+        }
+
+        function UploadAnImage(ImgToUpload, imgNo) {
+            const metadata = {
+                contentType: ImgToUpload.type
+            };
+
+            const storage = getStorage();
+
+            const ImageAddress = "TheImages" + getShortTitle() + "/imgs" + (imgNo + 1);
+            const storageRef = sRef(storage, ImageAddress);
+
+            const UploadTask = uploadBytesResumable(storageRef, ImgToUpload, metadata);
+
+            UploadTask.on('state_changed', (snapshot) => {
+                proglab.innerHTML = GetImgUploadProgress();
+            }, (error) => {
+                alert("error: image upload failed");
+            }, () => {
+                getDownloadURL(UploadTask.snapshot.ref).then((downloadURL) => {
+                    ImageLinksArray.push(downloadURL);
+                    if (IsAllImagesUploaded()) {
+                        proglab.innerHTML = "all images uploaded";
+                        UploadAProduct();
+                    }
+                });
+            });
+        }
+
+        //------------------------------------IMPORTS + CONFIGURATION-------------------------------------------------------------------------------------------//
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDY807T57IqmBbVVkBF6cQRn5vBwpObo4M",
+            authDomain: "fire9db-291fd.firebaseapp.com",
+            databaseURL: "https://fire9db-default-rtdb.firebaseio.com",
+            projectId: "fire9db-291fd",
+            storageBucket: "fire9db-291fd.appspot.com",
+            messagingSenderId: "728088034663",
+            appId: "1:728088034663:web:e485f7e61eb4b06ac883c2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+
+        import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+        //-----------------------------------------IMPORT DATABASE FUNCTIONS--------------------------------------------------------------------------//
+
+        import { getDatabase, ref, set }
+        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        const realdb = getDatabase();
+
+        //------------------------------------------UPLOAD A PRODUCT-------------------------------------------------------------------------------//
+
+        function UploadAProduct() {
+            set(ref(realdb, "TheProductRealdb/" + getShortTitle()), {
+                ProductTitle: name.value,
+                Category: category.value,
+                Description: description.value,
+                Price: price.value,
+                Stock: stock.value,
+                Points: GetPoints(),
+                LinkOfImagesArray: ImageLinksArray
+            });
+
+            alert("upload successful");
+            RestoreBack();
+        }
+    </script>
+</body>
+</html>
